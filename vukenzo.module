@@ -1,5 +1,5 @@
 #!name=vukenzo
-#!desc=Module gộp YouTube Premium (No Ads, Background Play, PiP) và Locket Gold độc lập bởi vukenzo.
+#!desc=Module gộp YouTube Premium, Locket Gold và Spotify Premium độc lập bởi vukenzo.
 #!author=vukenzo
 
 [Rule]
@@ -12,6 +12,12 @@ DOMAIN-SUFFIX,googleadservices.com,REJECT
 # --- Locket Rules ---
 DOMAIN-SUFFIX,api.locket.camera,PROXY
 
+# --- Spotify Rules ---
+DOMAIN-KEYWORD,spotify,PROXY
+DOMAIN-SUFFIX,spotify.com,PROXY
+DOMAIN-SUFFIX,scdn.co,PROXY
+DOMAIN-SUFFIX,spclient.wg.spotify.com,PROXY
+
 [URL Rewrite]
 # --- YouTube Rewrites ---
 ^https?:\/\/[\w-]+\.googlevideo\.com\/videoplayback\?.*&o=([0-9a-zA-Z_]+).*&ctier=L&.* $1 302
@@ -23,5 +29,8 @@ youtube = type=http-response,pattern=^https?:\/\/youtubei\.googleapis\.com\/yout
 # --- Locket Gold Script ---
 locket = type=http-response,pattern=^https:\/\/api\.locket\.camera\/v1\/users\/me,requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/vuong2023/shad/main/modules/Locket_ohb.js
 
+# --- Spotify Premium Script ---
+spotify-json = type=http-request,pattern=^https:\/\/(spclient\.wg\.spotify\.com|.*-spclient\.spotify\.com(:443)?)\/(bootstrap\/v1\/bootstrap|user-customization-service\/v1\/customize)$,requires-body=1,script-path=https://raw.githubusercontent.com/app2smile/rules/master/js/spotify.js
+
 [MITM]
-hostname = youtubei.googleapis.com, *.googlevideo.com, api.locket.camera
+hostname = youtubei.googleapis.com, *.googlevideo.com, api.locket.camera, spclient.wg.spotify.com, *-spclient.spotify.com
