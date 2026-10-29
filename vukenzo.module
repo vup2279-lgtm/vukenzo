@@ -1,0 +1,27 @@
+#!name=vukenzo
+#!desc=Module gộp YouTube Premium (No Ads, Background Play, PiP) và Locket Gold độc lập bởi vukenzo.
+#!author=vukenzo
+
+[Rule]
+# --- YouTube Rules ---
+AND,((PROTOCOL,UDP), (DEST-PORT,443), (REJECT-DROP)),BUILD-IN-METADATA
+URL-REGEX,^https?:\/\/youtubei\.googleapis\.com\/youtubei\/v1\/(browse|next|player|search|reconstruct_path|guide|get_transcript),REJECT
+DOMAIN-SUFFIX,googlesyndication.com,REJECT
+DOMAIN-SUFFIX,googleadservices.com,REJECT
+
+# --- Locket Rules ---
+DOMAIN-SUFFIX,api.locket.camera,PROXY
+
+[URL Rewrite]
+# --- YouTube Rewrites ---
+^https?:\/\/[\w-]+\.googlevideo\.com\/videoplayback\?.*&o=([0-9a-zA-Z_]+).*&ctier=L&.* $1 302
+
+[Script]
+# --- YouTube Script ---
+youtube = type=http-response,pattern=^https?:\/\/youtubei\.googleapis\.com\/youtubei\/v1\/(browse|next|player|search|reconstruct_path|guide|get_transcript),requires-body=1,max-size=10485760,script-path=https://raw.githubusercontent.com/akiralereal/shadowrocket-toolkit/main/dist/youtube.js
+
+# --- Locket Gold Script ---
+locket = type=http-response,pattern=^https:\/\/api\.locket\.camera\/v1\/users\/me,requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/vuong2023/shad/main/modules/Locket_ohb.js
+
+[MITM]
+hostname = youtubei.googleapis.com, *.googlevideo.com, api.locket.camera
