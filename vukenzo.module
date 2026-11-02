@@ -8,30 +8,41 @@ AND,((DOMAIN-SUFFIX,googlevideo.com),(PROTOCOL,UDP)),REJECT
 AND,((DOMAIN,youtubei.googleapis.com),(PROTOCOL,UDP)),REJECT
 
 # --- Spotify Rules ---
-DOMAIN-KEYWORD,spotify,PROXY
-DOMAIN-SUFFIX,spotify.com,PROXY
-DOMAIN-SUFFIX,scdn.co,PROXY
-DOMAIN-SUFFIX,spclient.wg.spotify.com,PROXY
+AND,((DOMAIN-SUFFIX, spotify.com), (PROTOCOL, QUIC)),REJECT
+DOMAIN,aet.spotify.com,REJECT
 
 [URL Rewrite]
 # --- YouTube Rewrites ---
-(^https?://[\w-]+\.googlevideo\.com/(?!dclk_video_ads).+?)&ctier=L(&.+?),ctier,(.+) $1$2$3 302
-^https?://[\w-]+\.googlevideo\.com/(?!(?:dclk_video_ads|videoplayback\?)).+&oad _ reject-200
-^https?://(?:www|s)\.youtube\.com/api/stats/ads _ reject-200
-^https?://(?:www|s)\.youtube\.com/(?:pagead|ptracking) _ reject-200
-^https?://s\.youtube\.com/api/stats/qoe\?adcontext _ reject-200
+'(^https?://[\w-]+\.googlevideo\.com/(?!dclk_video_ads).+?)&ctier=L(&.+?),ctier,(.+)' $1$2$3 302
+'^https?://[\w-]+\.googlevideo\.com/(?!(?:dclk_video_ads|videoplayback\?)).+&oad' _ reject-200
+'^https?://(?:www|s)\.youtube\.com/api/stats/ads' _ reject-200
+'^https?://(?:www|s)\.youtube\.com/(?:pagead|ptracking)' _ reject-200
+'^https?://s\.youtube\.com/api/stats/qoe\?adcontext' _ reject-200
+
+# --- Spotify Rewrites ---
+^https:\/\/(spclient\.wg|.*-spclient)\.spotify\.com(:443)?\/pendragon - reject
+^https:\/\/.*-spclient\.spotify\.com(:443)?\/pam-view-service\/ - reject
+^https:\/\/.*37i9dQZF1EYkqdzj48dyYq - reject
+
+[Header Rewrite]
+http-request ^https:\/\/(spclient\.wg\.spotify\.com|.*-spclient\.spotify\.com(:443)?)\/user-customization-service\/v1\/customize$ header-del if-none-match
 
 [Script]
 # --- YouTube Premium ---
-youtube_response = type=http-response,pattern=^https://youtubei\.googleapis\.com/youtubei/v1/(?:browse|next|player|search|reel/reel_watch_sequence|guide|account/get_setting|get_watch)(?:[/?#]|$),requires-body=1,max-size=-1,binary-body-mode=1,script-path=https://raw.githubusercontent.com/akiralereal/shadowrocket-toolkit/84477215bc16c39478203688fac8e2a943364c57/scripts/youtube-response.js,argument="{}"
+youtube_response = type=http-response,pattern=^https://youtubei\.googleapis\.com/youtubei/v1/(?:browse|next|player|search|reel/reel_watch_sequence|guide|account/get_setting|get_watch)(?:[/?#]|$),requires-body=1,max-size=-1,binary-body-mode=1,script-path=https://cdn.jsdelivr.net/gh/akiralereal/shadowrocket-toolkit@main/scripts/youtube-response.js,argument="{}"
 
 # --- Locket Gold ---
-revenuecat = type=http-response,pattern=^https:\/\/api\.revenuecat\.com\/.+\/(receipts$|subscribers\/[^/]+$),requires-body=true,max-size=-1,timeout=60,script-path=https://raw.githubusercontent.com/vuong2023/shad/main/js/Locket_Ohoang7.js
-deleteHeader = type=http-request,pattern=^https:\/\/api\.revenuecat\.com\/.+\/(receipts|subscribers),script-path=https://raw.githubusercontent.com/vuong2023/shad/main/js/deleteHeader.js,timeout=60
+revenuecat = type=http-response,pattern=^https:\/\/api\.revenuecat\.com\/.+\/(receipts$|subscribers\/[^/]+$),requires-body=true,max-size=-1,timeout=60,script-path=https://cdn.jsdelivr.net/gh/vuong2023/shad@main/js/Locket_Ohoang7.js
+deleteHeader = type=http-request,pattern=^https:\/\/api\.revenuecat\.com\/.+\/(receipts|subscribers),script-path=https://cdn.jsdelivr.net/gh/vuong2023/shad@main/js/deleteHeader.js,timeout=60
 
-# --- Spotify Premium ---
-spotify-json = type=http-request,pattern=^https:\/\/(spclient\.wg\.spotify\.com|.*-spclient\.spotify\.com(:443)?)\/(artistview\/v1\/artist|album-entity-view\/v2\/album)\/,requires-body=0,script-path=https://raw.githubusercontent.com/app2smile/rules/master/js/spotify-json.js
-spotify-proto = type=http-response,pattern=^https:\/\/(spclient\.wg\.spotify\.com|.*-spclient\.spotify\.com(:443)?)\/(bootstrap\/v1\/bootstrap|user-customization-service\/v1\/customize)$,requires-body=1,binary-body-mode=1,max-size=0,script-path=https://raw.githubusercontent.com/app2smile/rules/master/js/spotify-proto.js,script-update-interval=0
+# --- Spotify Scripts ---
+spotify-search = type=http-response,pattern=^https:\/\/(spclient\.wg\.spotify\.com|.*-spclient\.spotify\.com(:443)?)\/browsita\/v.\/browse,requires-body=1,binary-body-mode=1,max-size=0,script-path=https://raw.githubusercontent.com/Reukix/ukix/refs/heads/main/js/Spotify-search.js
+spotify-scroll = type=http-response,pattern=^https:\/\/(spclient\.wg\.spotify\.com|.*-spclient\.spotify\.com(:443)?)\/scrollsita\/v.\/scroll\/spotify,requires-body=1,binary-body-mode=1,max-size=0,script-path=https://raw.githubusercontent.com/Reukix/ukix/refs/heads/main/js/Spotify-scroll.js
+spotify-gabo = type=http-request,pattern=^https:\/\/(.*-spclient\.spotify\.com(:443)?|spclient\.wg\.spotify\.com)\/gabo-receiver-service,requires-body=0,script-path=https://raw.githubusercontent.com/Reukix/ukix/refs/heads/main/js/Spotify-gabo.js
+spotify-proto = type=http-response,pattern=^https:\/\/(spclient\.wg\.spotify\.com|.*-spclient\.spotify\.com(:443)?)\/(bootstrap\/v1\/bootstrap|user-customization-service\/v1\/customize)$,requires-body=1,binary-body-mode=1,max-size=0,script-path=https://raw.githubusercontent.com/Reukix/ukix/refs/heads/main/js/Spotify-proto.js,script-update-interval=0
 
 [MITM]
-hostname = %APPEND%, *.googlevideo.com, youtubei.googleapis.com, www.youtube.com, s.youtube.com, -redirector*.googlevideo.com, api.revenuecat.com, spclient.wg.spotify.com, *spclient.spotify.com
+ca-passphrase = zFDVAzoe
+ca-p12 = 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
+enable = true
+hostname = %APPEND% *.googlevideo.com, youtubei.googleapis.com, www.youtube.com, s.youtube.com, -redirector*.googlevideo.com, api.revenuecat.com, spclient.wg.spotify.com, *spclient.spotify.com
